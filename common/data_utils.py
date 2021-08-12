@@ -1118,7 +1118,7 @@ def denormalize_image(image):
     return image
 
 
-def preprocess_image(image, model_image_size):
+def preprocess_image(image, model_image_size, norm = True, grayscale=False):
     """
     Prepare model input image data with letterbox
     resize, normalize and dim expansion
@@ -1132,10 +1132,19 @@ def preprocess_image(image, model_image_size):
     # Returns
         image_data: numpy array of image data for model input.
     """
-    #resized_image = cv2.resize(image, tuple(reversed(model_image_size)), cv2.INTER_AREA)
-    resized_image = letterbox_resize(image, tuple(reversed(model_image_size)))
-    image_data = np.asarray(resized_image).astype('float32')
-    image_data = normalize_image(image_data)
+    import tensorflow as tf
+
+    if norm:
+        image = normalize_image(np.array(image))
+    else:
+        image = np.array(image).astype(np.float32)
+
+    image_data = tf.compat.v1.image.resize(image, model_image_size, align_corners=True)
+    
+    if grayscale:
+        image_data = tf.image.rgb_to_grayscale(image_data)
+    image_data = image_data.numpy()
+
     image_data = np.expand_dims(image_data, 0)  # Add batch dimension.
     return image_data
 
