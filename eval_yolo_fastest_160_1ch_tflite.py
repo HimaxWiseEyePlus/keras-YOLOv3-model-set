@@ -213,6 +213,8 @@ def yolo_predict_tflite(interpreter, image, anchors, num_classes, conf_threshold
     bran = -1
     num = 0
 
+    output_details.sort(key=lambda x: interpreter.get_tensor(x['index'])[0].shape[0], reverse=False)
+
     for output_detail in reversed(output_details):
         output_data = interpreter.get_tensor(output_detail['index'])[0]
         zero_point = output_detail['quantization'][1]
